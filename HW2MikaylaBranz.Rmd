@@ -1,0 +1,175 @@
+---
+title: "Mikayla Branz HW2"
+output:
+  html_document
+---
+
+## 1. Import class one survey data from our Github site (https://github.com/kijohnson/ADA-FAll-2020) (The dataset called ‘Class 1 Survey Fall 2020.csv’ is located in the class one folder), calling the R dataframe that you create C1survey.
+
+```{r}
+#Install package readr to read csv file
+#install.packages("readr")
+#added hashtag here so it doesn't keep installing the package every time it runs
+
+#Open package readr to read csv file
+library(readr)
+
+#Import csv file
+C1survey<- read_csv("https://raw.githubusercontent.com/kijohnson/ADA-FAll-2020/master/Class%20One/Class%201%20Survey%20Fall%202020.csv")
+```
+
+## 2. Determine: a. the number of observations (i.e. the number of people who filled out the survey) and b. the number of variables in the dataframe.
+
+```{r, include=TRUE, echo=TRUE}
+
+#Determine the number of observations (rows) and the number of variables (columns) in the dataframe
+dim(C1survey)
+
+#There are 32 observations and 27 variables in the dataframe 
+```
+
+## 3. a. Rename the column variables to something shorter and that is descriptive of what the variable is about (for example like_dogs for the ‘Do you like dogs?’ question variable) and b. Display that they are renamed.
+
+```{r}
+#Make a list of column names
+varlist <-colnames(C1survey)
+varlist
+
+#Rename column variables in order of appearance 
+names(C1survey) <- c("ID", "LikeCats", "LikeDogs", "DesertItem", "Slogan", "FavWeekday", "BirdType", "FavFood", "FavDrink", "FavSeason", "FavMonth", "Hobby", "DegreeProgram", "Specialization", "Software", "rExperience", "CodingComfort", "CodingTime", "HopeLearn", "InterestArea", "FavNumber", "BirthDay", "BirthMonth", "HomeCountry", "HomeState", "HomeCity", "Education")
+
+#Display what the column variables are renamed
+colnames(C1survey)
+```
+## 4. Write code to determine and display the number of factor, integer, numerical, and character variables there are in the C1survey dataset.
+
+```{r}
+## Display the number of each class of variables
+table(sapply(C1survey, class))
+
+#There are 23 character variables, 4 numeric variables, 0 factor variables, and 0 integer variables.
+```
+## 5. a. Using code, check the bday and bmonth variables for any unusual or missing values. If you find any, b. describe what you will do with the unusual values in a comment before or immediately following the code that does it, and c. after you have cleaned up any unusual values, find the median bday and month. *Note: please make sure that your bday and month variables are numeric before doing statistics
+
+```{r}
+#Check the class of BirthDay
+class(C1survey$BirthDay)
+
+#Check for missing values in BirthDay
+is.na(C1survey$BirthDay)
+#No missing values
+
+#Look at the values in the BirthDay column to see if any are unusual
+View(C1survey$BirthDay)
+#26-Mar is unusual. It should be 26. 
+
+#Change 26-Mar to 26
+C1survey[which(C1survey$BirthDay=='26-Mar'),]$BirthDay<-"26"
+
+#Change BirthDay from character to numeric
+C1survey$BirthDay <- as.numeric(C1survey$BirthDay)
+
+#Check that it worked-- it did!
+class(C1survey$BirthDay)
+
+#Check the class of BirthMonth
+class(C1survey$BirthMonth)
+
+#Check for missing values in BirthMonth
+is.na(C1survey$BirthMonth)
+#No missing values
+
+#Look at the values in the BirthMonth column to see if any are unusual
+View(C1survey$BirthMonth)
+#People wrote "december", "August", and "March" when they should have written a number
+
+#Change december to 12
+C1survey[which(C1survey$BirthMonth=='december'),]$BirthMonth<-"12"
+
+#Change "August" to 8
+C1survey[which(C1survey$BirthMonth=='August'),]$BirthMonth<-"8"
+
+#Change "March" to 3
+C1survey[which(C1survey$BirthMonth=='March'),]$BirthMonth<-"3"
+
+#Change BirthMonth from character to numeric
+C1survey$BirthMonth <- as.numeric(C1survey$BirthMonth)
+
+#Check that it worked-- it did!
+class(C1survey$BirthMonth)
+
+#Find Median BirthDay
+median(C1survey$BirthDay)
+#Median BirthDay is 18
+
+#Find median BirthMonth
+median(C1survey$BirthMonth)
+#Median BirthMonth is August
+
+```
+## 6. a. Create a new variable called bseason that gives the season according to Northern Meteorological season in which respondents were born (winter=12/1 to 2/29, spring=3/1 to 5/31, summer=6/1 to 8/31, fall=9/1 to 11/30). b. Using the table function, print a table of Seasons in the columns and bmonths in the rows that allows you to check that the coding is correct c. Sum the columns using the addmargins function to answer the question of how many classmates were born in each season? Include your answer in the code you turn in.
+```{r}
+
+#Create a new variable called bseason and categorize birth month into birth season.
+C1survey$bseason[C1survey$BirthMonth == 12 | C1survey$BirthMonth == 1 | C1survey$BirthMonth == 2 ] = "winter"
+C1survey$bseason[C1survey$BirthMonth == 3 | C1survey$BirthMonth == 4 | C1survey$BirthMonth == 5 ] = "spring"
+C1survey$bseason[C1survey$BirthMonth == 6 | C1survey$BirthMonth == 7 | C1survey$BirthMonth == 8 ] = "summer"
+C1survey$bseason[C1survey$BirthMonth == 9 | C1survey$BirthMonth == 10 | C1survey$BirthMonth == 11 ] = "fall"
+
+#Make bseason a factor variable
+C1survey$bseason <- as.factor(C1survey$bseason)
+
+#Make a table with seasons as columns and months as rows. Looks correct!
+MonthSeasonTable <- table(C1survey$BirthMonth,C1survey$bseason)
+MonthSeasonTable
+ 
+#I tried hard to put labels on this table but couldn't figure it out :(
+
+#Sum the columns
+addmargins(MonthSeasonTable)
+
+#Answer: 10 people were born in fall, 7 in spring, 9 in summer, and 6 in winter. 
+```
+## 7. Pick your favorite variable to analyze, come up with a question you want to answer with that variable, generate the code, and provide an answer to your question. Describe what you did using comments (i.e. #’s).
+```{r}
+#I will use the variable BirdType to figure out how many people are night owls, morning larks, or neither (hummingbirds)
+
+#Find out what type of variable BirdType is
+class(C1survey$BirdType)
+#Its a character variable
+
+#Change BirdType to Factor variable
+C1survey$BirdType <- as.factor(C1survey$BirdType)
+
+#Find out how many of each category there are
+summary(C1survey$BirdType)
+
+#There are 9 hummingbirds, 8 larks, and 15 owls who took the survey 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
